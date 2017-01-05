@@ -10,7 +10,7 @@ Welcome to Cluster Genesis User Guide's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-   OPCG_Users_Guide_v0.962
+   readme.rst
 
 Indices and tables
 ==================
