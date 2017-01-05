@@ -3,7 +3,7 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to Cluster Genesis User Guide's documentation!
+Welcome to Read the Docs documentation test!
 ======================================================
 
 .. toctree::
