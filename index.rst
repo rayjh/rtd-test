@@ -10,7 +10,7 @@ Welcome to Cluster Genesis User Guide's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-   readme.rst
+   README.rst
 
 Indices and tables
 ==================
