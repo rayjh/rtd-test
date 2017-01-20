@@ -11,10 +11,10 @@ Welcome to Cluster Genesis User's Guide documentation!
    :caption: Contents:
    :numbered:
    
-   OPCG_front_matter_v0.962
-   OPCG_intro_&_setup_v0.962
-   OPCG_config.yml_create_v0.962
-   OPCG_running_OPCG_v0.962
+   OPCG_front_matter
+   OPCG_intro_&_setup
+   OPCG_config.yml_create
+   OPCG_running_OPCG
    Appendix-A
    Appendix-B
    Appendix-C
