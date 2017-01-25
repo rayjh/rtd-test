@@ -265,3 +265,24 @@ Notes:
    OpenPOWER S812LC, the two drives in the rear of the unit are
    typically used for OS install. These drives should normally be
    specified as /dev/sdj and /dev/sdk
+
+Post Genesis Activities
+-----------------------
+
+The section of the config.yml file allows you to execute additional commands on your
+cluster nodes after Genesis completes.  These can perform various additional configuration 
+activities or bootstrap additional software package installation.  Commands can be specified 
+to run on all cluster nodes or only specific nodes specified by the compute template name.
+
+The following config.yml file entries run the "apt-get update" command on all cluster
+nodes and then runs the "apt-get upgrade -y" command on the first compute node and runs 
+"apt-get install vlan" on all controller nodes::
+
+    software-bootstrap:
+        all: apt-get update
+        compute[0]: |
+            apt-get update
+            apt-get upgrade -y
+        controllers:
+            apt-get install vlan	
+			

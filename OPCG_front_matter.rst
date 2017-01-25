@@ -1,17 +1,4 @@
 
-   
-:Version: 0.962
-:Date: 1/11/17
-:Document Owner:
-    OpenPOWER Cluster Genesis Team
-:Authors:
-    Irving Baysah,
-    Rolf Brudeseth,
-    Jay Carman,	
-    Ray Harrington,
-    Hoa Ngo,
-    Nilesh Shah,	
-    Jorge Yanez,
 	
 .. .. sectnum::
 ..    :depth: 3
@@ -35,12 +22,11 @@ Upon initial publication, this document will be stored on Github
 Revision History
 ----------------
 
+
 +--------+---------------+----------------------------+----+
-| 0.1    | 22 May 2016   | Initial draft              |    |
+| 0.9    | 11 Oct 2016   | Beta release               |    |
 +--------+---------------+----------------------------+----+
-| 0.9    | 11 Oct 2016   | interim draft              |    |
-+--------+---------------+----------------------------+----+
-| 0.92   | 20 Oct 2016   | initial external release   |    |
+| 1.0    | 24 Jan 2017   | initial external release   |    |
 +--------+---------------+----------------------------+----+
 
 .. raw:: html

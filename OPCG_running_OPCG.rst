@@ -9,9 +9,6 @@ Installing and Running the Genesis code. Step by Step Instructions
 #.  Verify that all the steps in section `3.2 <#anchor-5>`__ `Setting up
     the Deployer Node <#anchor-5>`__ have been executed
 #.  login to the deployer node.
-#.  verify that you can access the management interfaces of the
-    management switch(es) and the data switch(es) (ie ping) from the
-    host OS.
 #.  Export the following environment variable::
     
       $ export GIT_SSL_NO_VERIFY=1
@@ -50,19 +47,8 @@ Installing and Running the Genesis code. Step by Step Instructions
     
     ie::
     
-      $ echo PATH=~/cluster-genesis/deployenv/bin:\$PATH" >> ~/.bashrc
+      $ echo "PATH=~/cluster-genesis/deployenv/bin:\$PATH" >> ~/.bashrc
 
-#.  Set the following environment variable::
-
-       $ export ANSIBLE_HOST_KEY_CHECKING=False
-       
-    NOTE: anytime you leave and restart your shell session, you need to re-execute this line.
-    Alternately, (recommended) edit your .bashrc file. 
-    
-    ie::
-    
-       $ echo "export ANSIBLE_HOST_KEY_CHECKING=False" >> ~/.bashrc
-       
 #. copy your config.yml file to the ~/cluster-genesis directory (see
    section `4 <#anchor-4>`__ `Creating the config.yml
    File <#anchor-4>`__ for how to create the config.yml file)
@@ -88,28 +74,24 @@ Installing and Running the Genesis code. Step by Step Instructions
       $ ansible-playbook -i hosts lxc-create.yml -K
 
 #. verify that you can access the management interfaces of the
-   management switch(es) and the data switch(es) (ie ping) from within
+   management switch(es) (ie ping) from within
    the newly created container.
 
    - To see the name of the created container::
 
       $ sudo lxc-ls
 
-   - To access the container as root::
+   - To access the container::
 
       $ sudo lxc-attach -n containername
-      $ ping -c3 192.168.0.5 
+      $ ping -c3 192.168.16.5 
       (Example address.  This should match the address assigned to the
-      management interface of one of your switches.)
-
-#. To begin genesis of your cluster, from the cluster-genesis/playbooks directory run::
-
-      $ ansible-playbook -i hosts install.yml -K
-      NOTE that this will typically take several minutes to run.
+      management interface of one of your switches.  Note that the above
+      commands access the container as root.)
 
    NOTE: 
-       Before pressing enter for the next step, be sure all BMCs are configured to obtain a 
-       DHCP address then reset all BMC interfaces of your cluster nodes.  As the BMCs reset, 
+       Before beginning the next step, be sure all BMCs are configured to obtain a 
+       DHCP address then reset (reboot) all BMC interfaces of your cluster nodes.  As the BMCs reset, 
        the Cluster Genesis DHCP server will assign new addresses to the BMCs of all cluster nodes.
   
    One of the following options can be used to reset the BMC interfaces;
@@ -118,7 +100,7 @@ Installing and Running the Genesis code. Step by Step Instructions
      an IP address from the deployer node.
    - Use ipmitool run as root local to each node; ipmitool bmc reset warm OR
      ipmitool mc reset warm depending on server
-   - Use ipmitool remotely. (assuming a known ip address already
+   - Use ipmitool remotely. (this assumes a known ip address already
      exists on the BMC interface)::
 
         ipmitool -I lanplus -U <username> -P <password> -H <bmc ip address> mc reset cold
@@ -130,20 +112,21 @@ Installing and Running the Genesis code. Step by Step Instructions
       UEFI/BIOS setup menu to configure the BMC network configuration to
       DHCP, save and exit.
    -  use IPMItool to configure BMC network for DHCP and reboot the BMC
+	  
+	  
+#. To begin genesis of your cluster, from the cluster-genesis/playbooks directory run::
 
-  
-   If all is well, afer several minutes a prompt should appear::
+      $ ansible-playbook -i hosts install.yml -K
+      NOTE that this will typically take 30 minutes or more to run depending on the size of your cluster.
 
-      "Please reset BMC interfaces to obtain DHCP leases. Press <enter> to continue"
-
-   Genesis will now wait up to 30 minutes for the BMCs of all cluster nodes to reset and obtain
-   an IP address.  You can monitor which nodes have obtained ip addresses, by executing the following from 
-   another window within the container::
+   After several minutes Cluster Genesis will have initialized and should display a list of cluster 
+   nodes which have obtained BMC addresses.  Genesis will wait up to 30 minutes for the BMCs of all 
+   cluster nodes to reset and obtain an IP address.  You can monitor which nodes have obtained ip 
+   addresses, by executing the following from another window within the container::
 
       $ cat /var/lib/misc/dnsmasq.leases
 	
-   After a delay, the genesis code will list out the discovered BMC
-   ports. Verify that all cluster nodes appear in the list. 
+   Verify that all cluster nodes appear in the list. 
 	  
    If any nodes are missing, verify cabling and verify the config.yml file. If
    necessary, recycle power to the missing nodes. See "Recovering from Genesis Issues" in the 
@@ -154,23 +137,25 @@ After Genesis completes the assignment of DHCP addresses to the cluster nodes BM
 Genesis will interogate the management switches and read the MAC addresses associated with
 the BMC and PXE ports and initialize Cobbler to assign specific addresses to those MAC addresses.
 
+After Genesis has assigned IP addresses to the PXE ports of all cluster nodes, it will display a list of
+all nodes.  Genesis will wait up to 30 minutes for the PXE ports of all cluster nodes to 
+reset and obtain an IP address.
 
-After Genesis completes (command prompt returns), you can monitor the progress of 
+
+After the command prompt returns, you can monitor the progress of 
 operating system installation as follows:
 
 #. First, login to the genesis container.  To get the login information::
 
-   $ grep "^deployer" ~/cluster-genesis/playbooks/hosts
-   
-   deployer ansible_user=deployer ansible_ssh_private_key_file=/home/ubuntu/.ssh/id_rsa_ansible-generated ansible_host=192.168.0.2*
-
-   $ ssh -i ~/.ssh/id_rsa_ansible-generated deployer@192.168.0.2
+     $ grep "^deployer" ~/cluster-genesis/playbooks/hosts
+     deployer ansible_user=deployer ansible_ssh_private_key_file=/home/ubuntu/.ssh/id_rsa_ansible-generated ansible_host=192.168.0.2*
+     $ ssh -i ~/.ssh/id_rsa_ansible-generated deployer@192.168.0.2
+	 (example ip address.  Replace with the ip address for your cluster)
 
 #. From withing the container, execute the following command within the /home/deployer/cluster-genesis
    directory to see progress/status of operating system installation::  
    
    $ sudo cobbler status
-
 
 It will usually take several minutes for all the nodes to load their OS.
 If any nodes do not appear in the cobbler status, see "Recovering from 
@@ -191,8 +176,9 @@ and compute template sections of the config.yml file. SSH keys are also
 generated and copied to each cluster node. From the host namespace, in the 
 *~/cluster-genesis/playbooks* directory execute::
 
-   $ ansible-playbook -i ../scripts/python/yggdrasil/inventory.py gather\_mac\_addresses.yml -u root --private-key=~/.ssh/id\_rsa\_ansible-generated
-   $ ansible-playbook -i ../scripts/python/yggdrasil/inventory.py configure\_operating\_systems.yml -u root --private-key=~/.ssh/id\_rsa\_ansible-generated
+   $ ansible-playbook -i ../scripts/python/yggdrasil/inventory.py ssh_keyscan.yml -u root --private-key=~/.ssh/id_rsa_ansible-generated
+   $ ansible-playbook -i ../scripts/python/yggdrasil/inventory.py gather_mac_addresses.yml -u root --private-key=~/.ssh/id_rsa_ansible-generated
+   $ ansible-playbook -i ../scripts/python/yggdrasil/inventory.py configure_operating_systems.yml -u root --private-key=~/.ssh/id_rsa_ansible-generated
 
 
 

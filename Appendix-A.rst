@@ -12,22 +12,6 @@ Appendix - A Cheat Sheet
     $ apt-get update
     $ apt-get install vim vlan bridge-utils
 	
--  Bring down the interface to be used for providing PXE support::
-
-    $ sudo ifdown eth0   (eth0 used as example)
-	
--  add the following lines to the /etc/network/interfaces file::
-
-    auto br0
-    iface br0 inet static
-        address 192.168.16.1 (example address)
-        netmask 255.255.255.0 (example netmask. This must match the
-        submask specified by ipaddr-mgmt-network: in the config.yml)
-        bridge_ports eth0 (eth0 used as example)
-			
--  Bring up the interface to be used for providing PXE support::
-
-    $ sudo ifup eth0
 
 **Installing the OpenPOWER Cluster Genesis Software**::
 
@@ -65,12 +49,8 @@ To begin cluster genesis::
     $ ansible-playbook -i hosts install.yml -K (begins cluster genesis)
     Allow several minutes to run.
    
-After several minutes a prompt should appear;
 
-   -  "Please reset BMC interfaces to obtain DHCP leases. Press <enter>
-      to continue"
-
-After Genesis completes, run the following to see the status/progress of
+After the command prompt returns, run the following to see the status/progress of
 operating system load for each cluster node::
 
     sudo cobbler status (from within container at /home/deployer/cluster-genesis)

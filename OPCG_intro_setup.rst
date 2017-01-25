@@ -184,16 +184,33 @@ Hardware initialization
 
 -  Configure Management switch(es) (for out of box installation, it is
    usually necessary to configure the switch using a serial connection.
-   See the switch installation guide. For Lenovo G8052 specific
-   commands, see Appendix F.)
+   See the switch installation guide. For additional info on Lenovo G8052 specific
+   commands, see Appendix G.)
 
    -  assign hostname
-   -  assign static ip address. This must match the address specified in
+   -  create a vlan for use in accessing the management interfaces of your
+      switches.  This must match the vlan specified by the "vlan-mgmt-network:" 
+      key in your cluster configuration (config.yml) file::
+	    
+        en
+        conf t
+        vlan 16   (example vlan.)
+		
+   -  assign a static ip address, netmask and gateway address to a management interface. 
+      This must match the address specified in
       the config.yml file (keyname: ipaddr-mgmt-switch:) and be in a
-      *different* subnet than your cluster management subnet.
-   -  assign netmask. This must match the netmask of the subnet the
-      deployer will use to access the management port of the switch.
-   -  default gateway
+      *different* subnet than your cluster management subnet. Place this
+      interface in the above created vlan::
+  
+        interface ip 1
+        ip address 192.168.16.5    (example ip address)
+        ip netmask 255.255.255.0   (example netmask)
+        vlan 16
+        enable
+        exit
+        ip gateway 1 address 192.168.16.1  (example ip address)
+        ip gateway 1 enable
+		
    -  admin password. This must match the password specified in the
       config.yml file (keyword: password-mgmt-switch:). Note that all
       management switches in the cluster must have the same userid and
@@ -201,7 +218,17 @@ Hardware initialization
    -  disable spanning tree (for Lenovo switches *enable, configure
       terminal, spanning-tree mode disable*)
    -  enable SSH login. *(ssh enable)*
-   -  Save config (For Lenovo switches, enter config mode 
+	
+   -  Put the port used to connect to the deployer node (the node running 
+      Cluster Genesis) into trunk mode and add the above created vlan to that trunk::
+	  
+	    interface port 46  (example port #)
+		switchport mode trunk
+		trunk allowed vlan 1,16
+		exit
+		
+	  
+   -  Save the config (For Lenovo switches, enter config mode 
       then; *copy running-config startup-config or write.*  
       For additional information, consult vendor documentation)
 
@@ -216,7 +243,10 @@ memory and disk space are recommended. A 4 core XEON class processor
 with 32 GB memory and 320 GB disk space is generally adequate for
 installations up to several racks.
 
-The deployer node requires internet access
+The deployer node requires internet access.  The interface associated with
+the default route is used by the deployer for configuring the cluster.  This requires that
+the default route be through the management switch.  This restriction will be removed in above
+future release of Cluster gensesis.
 
 **Set up the Deployer Node** (to be automated in the future)
 
@@ -225,32 +255,12 @@ The deployer node requires internet access
 -  Optionally, assign a static, public ip address to the BMC port to
    allow external control of the deployer node.
 -  login into the deployer and install the vim, vlan and bridge-utils
-   packages. ::
+   packages::
 
      $ sudo apt-get update
-     $ apt-get install vim vlan bridge-utils
+     $ sudo apt-get install vim vlan bridge-utils
 
--  Bring down the interface to be used for providing PXE support.
-   (eth0 used as example.) ::
 
-     $ sudo ifdown eth0 
-	  
--  Create a bridge for use by the deployment container by adding 
-   the following lines to the /etc/network/interfaces file::
-
-         auto br0
-         iface br0 inet static
-            bridge_stp off
-            bridge_waitport 0
-            bridge_fd 0
-            address 192.168.16.1  #(example address)
-            netmask 255.255.255.0 #(example netmask. This must match the submask specified by ipaddr-mgmt-network: in the config.yml)
-            bridge_ports eth0     #(eth0 used as example)
-            offload-sg off
-
-- Bringup the interface to be used for PXE provisioning::
-
-        $ sudo ifup eth0
 
 **Note**: the port used to access the management switch (ie eth0) must
 also be defined in /etc/network/interfaces (Ubuntu) or the ifcfg-eth0
