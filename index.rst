@@ -7,7 +7,7 @@ Welcome to Cluster Genesis User's Guide documentation!
 ======================================================
 
 :Version: 1.0
-:Date: 1/24/17
+:Date: 2/4/17
 :Document Owner:
     OpenPOWER Cluster Genesis Team
 :Authors:
@@ -21,11 +21,12 @@ Welcome to Cluster Genesis User's Guide documentation!
 
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Contents:
    :numbered:
    
    OPCG_front_matter
+   release_table
    OPCG_intro_setup
    OPCG_config.yml_create
    OPCG_running_OPCG

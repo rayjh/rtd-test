@@ -285,4 +285,14 @@ nodes and then runs the "apt-get upgrade -y" command on the first compute node a
             apt-get upgrade -y
         controllers:
             apt-get install vlan	
-			
+
+OpenPOWER reference design recipes
+==================================
+
+Many OpenPOWER reference design recipes are available on github.  These recipes
+include bill of materials, system diagrams and config.yml files;
+
+- openstack-recipes
+- acclerated-db
+
+`OpenPOWER reference designs <https://github.com/open-power-ref-design>`_		

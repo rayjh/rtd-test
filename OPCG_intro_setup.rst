@@ -103,8 +103,8 @@ Management Switches;
 -  Lenovo G7028
 -  Lenovo G7052
 
-Prerequisites;
-==============
+Prerequisite hardware setup
+============================
 
 Hardware initialization
 -----------------------
@@ -185,53 +185,91 @@ Hardware initialization
 -  Configure Management switch(es) (for out of box installation, it is
    usually necessary to configure the switch using a serial connection.
    See the switch installation guide. For additional info on Lenovo G8052 specific
-   commands, see Appendix G.)
+   commands, see Appendix G. and the *Lenovo RackSwitch G8052 Installation guide*)
 
-   -  assign hostname
-   -  create a vlan for use in accessing the management interfaces of your
+  
+   -  Enter config mode and create a vlan for use in accessing the management interfaces of your
       switches.  This must match the vlan specified by the "vlan-mgmt-network:" 
       key in your cluster configuration (config.yml) file::
+	  
+        RS 8052> enable
+        RS 8052# configure terminal
+        RS 8052 (config)# vlan 16
+        RS G8052(config-vlan)# enable
+        RS G8052(config-vlan)# exit
+	  
+   -  Enable IP interface mode for the management interface:: 	  
 	    
-        en
-        conf t
-        vlan 16   (example vlan.)
+        RS 8052 (config)# interface ip 1
 		
-   -  assign a static ip address, netmask and gateway address to a management interface. 
+   -  assign a static ip address, netmask and gateway address to the management interface. 
       This must match the address specified in
       the config.yml file (keyname: ipaddr-mgmt-switch:) and be in a
       *different* subnet than your cluster management subnet. Place this
       interface in the above created vlan::
   
-        interface ip 1
-        ip address 192.168.16.5    (example ip address)
-        ip netmask 255.255.255.0   (example netmask)
-        vlan 16
-        enable
-        exit
+        RS 8052 (config-ip-if)# ip address 192.168.16.20 (example IP address)
+        RS 8052 (config-ip-if)# ip netmask 255.255.255.0
+        RS 8052 (config-ip-if)# vlan 16
+        RS 8052 (config-ip-if)# enable
+        RS 8052 (config-ip-if)# exit
+		
+   -  Configure the default gateway and enable the gateway::	
+	
         ip gateway 1 address 192.168.16.1  (example ip address)
         ip gateway 1 enable
+
+   -  Put the port used to connect to the deployer node (the node running 
+      Cluster Genesis) into trunk mode and add the above created vlan to that trunk::
+	  
+        interface port 46  (example port #)
+        switchport trunk allowed vlan 1,16
+        exit
+		
+   -  Verify the management interface setup::
+
+        RS G8052(config)#show interface ip
+		
+      A typical good setup would look like::
+
+        Interface information:
+        1:      IP4 192.168.16.20    255.255.255.0   192.168.16.255,  vlan 16, up    
+   
+   -  Verify the vlan setup::
+
+        RS G8052(config)#show vlan           
+		
+      A typical good result would look something like::
+  
+        VLAN                Name                Status            Ports
+        ----  --------------------------------  ------  -------------------------
+        1     Default VLAN                      ena     1-3 5 7 9 11 13-23 25 27 29 31
+                                                        33-46 48-XGE4
+        16    VLAN 16                           ena     46
 		
    -  admin password. This must match the password specified in the
       config.yml file (keyword: password-mgmt-switch:). Note that all
       management switches in the cluster must have the same userid and
-      password.
-   -  disable spanning tree (for Lenovo switches *enable, configure
-      terminal, spanning-tree mode disable*)
-   -  enable SSH login. *(ssh enable)*
-	
-   -  Put the port used to connect to the deployer node (the node running 
-      Cluster Genesis) into trunk mode and add the above created vlan to that trunk::
+      password.  The following command is interactive::
 	  
-	    interface port 46  (example port #)
-		switchport mode trunk
-		trunk allowed vlan 1,16
-		exit
+        access user administrator-password	  
+	  
+   -  disable spanning tree (for Lenovo switches *enable, configure
+      terminal, spanning-tree mode disable*)::
+	  
+        spanning-tree mode disable  
 		
+   -  enable secure https and SSH login::
+   
+        ssh enable
+        ssh generate-host-key	
+        access https enable		
+	
 	  
    -  Save the config (For Lenovo switches, enter config mode 
-      then; *copy running-config startup-config or write.*  
-      For additional information, consult vendor documentation)
-
+      For additional information, consult vendor documentation)::
+    
+        copy running-config startup-config	
 
 Setting up the Deployer Node
 ----------------------------
@@ -262,8 +300,8 @@ future release of Cluster gensesis.
 
 
 
-**Note**: the port used to access the management switch (ie eth0) must
-also be defined in /etc/network/interfaces (Ubuntu) or the ifcfg-eth0
+**Note**: Genesis uses the port associated with the default route to access the management
+switch (ie eth0).  This must be defined in /etc/network/interfaces (Ubuntu) or the ifcfg-eth0
 file (Red Hat).
 
 ie::
